@@ -4,7 +4,6 @@ import prisma from '../db/db.config.js';
 export const createUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-        console.log("name, email, password: ", name, email, password)
         const findUser = await prisma.user.findUnique({
             where: {
                 email
@@ -43,7 +42,6 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const userId = req.params.id;
-        console.log("updateUser called", userId);
         const { name, email, password } = req.body;
 
         await prisma.user.update({
@@ -68,7 +66,16 @@ export const updateUser = async (req, res) => {
 // fetching all user =============================
 export const fetchUsers = async (req, res) => {
     try {
-        const users = await prisma.user.findMany({});
+        const users = await prisma.user.findMany({
+            include: {
+                Post: {
+                    select: {
+                        title: true,
+                        comment_count: true,
+                    }
+                },
+            }
+        });
 
         return res.status(200).json({
             success: true,
@@ -120,7 +127,7 @@ export const deleteUser = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: `Dleting a User Error: ${error}`,
+            message: `Deleting a User Error: ${error}`,
         })
     }
 }
